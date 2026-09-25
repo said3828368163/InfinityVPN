@@ -1,12 +1,15 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages & Update Countdown
 
 on:
   push:
     branches: ["main"]
+  schedule:
+    # Запуск каждый день в полночь UTC (00:00 UTC)
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,6 +26,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Update Subscription Countdown & Stats
+        run: node update_subscription.js
+
+      - name: Commit and push changes if updated
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sub-30d.txt sub.txt README.md status.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-update subscription countdown: $(date -u)"
+            git push
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

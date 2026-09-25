@@ -118,8 +118,64 @@
     .subtitle {
       font-size: 14px;
       color: #94a3b8;
-      margin-bottom: 32px;
+      margin-bottom: 20px;
       line-height: 1.4;
+    }
+    .status-widget {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+      text-align: left;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+    .status-days {
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+    .status-sub {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #64748b;
     }
     .btn {
       width: 100%;
@@ -169,7 +225,25 @@
     <h1>InfinityVPN</h1>
     <p class="subtitle">Официальный Telegram Бот сервиса</p>
 
-    <!-- ТОЛЬКО ОДНА КНОПКА ПЕРЕХОДА В ТЕЛЕГРАМ БОТА -->
+    <!-- ИНФОРМАЦИЯ О ПОДПИСКЕ И ДНЯХ -->
+    <div class="status-widget">
+      <div class="status-row">
+        <div class="status-badge">
+          <span class="dot" id="dot"></span>
+          <span>Подписка 30 дней</span>
+        </div>
+        <div class="status-days" id="daysText">30 из 30 дн.</div>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="barFill" style="width: 100%;"></div>
+      </div>
+      <div class="status-sub">
+        <span id="trafficText">Трафик: 100 GB</span>
+        <span id="expiryText">Истекает: 25.10.2026</span>
+      </div>
+    </div>
+
+    <!-- КНОПКА ПЕРЕХОДА В ТЕЛЕГРАМ БОТА -->
     <a href="https://t.me/InfinityVPN_serverHost_bot" class="btn">
       <svg viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
@@ -177,5 +251,26 @@
       <span>Перейти в Telegram-бота</span>
     </a>
   </div>
+
+  <script>
+    fetch('./status.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.remaining_days !== undefined) {
+          document.getElementById('daysText').innerText = data.remaining_days + ' из ' + data.total_days + ' дн.';
+          document.getElementById('trafficText').innerText = 'Трафик: ' + data.traffic_remaining_gb + ' GB / ' + data.traffic_total_gb + ' GB';
+          if (data.progress_percent !== undefined) {
+            document.getElementById('barFill').style.width = data.progress_percent + '%';
+          }
+          if (data.status === 'expired') {
+            document.getElementById('dot').style.background = '#ef4444';
+            document.getElementById('dot').style.boxShadow = '0 0 10px #ef4444';
+            document.getElementById('daysText').innerText = 'Срок истёк';
+            document.getElementById('daysText').style.color = '#ef4444';
+          }
+        }
+      })
+      .catch(e => console.log('Status load fallback to defaults', e));
+  </script>
 </body>
 </html>
