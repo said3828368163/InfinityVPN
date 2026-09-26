@@ -1,0 +1,15 @@
+{
+  "name": "InfinityVPN Cloud Server",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye",
+  "forwardPorts": [
+    3000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "InfinityVPN Server",
+      "onAutoForward": "openBrowser",
+      "visibility": "public"
+    }
+  },
+  "postStartCommand": "nohup node server.js > server.log 2>&1 &"
+}
