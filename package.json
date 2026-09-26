@@ -1,0 +1,12 @@
+{
+  "name": "infinityvpn-codespace-server",
+  "version": "1.0.0",
+  "description": "InfinityVPN Dedicated Server running on GitHub Codespaces",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
