@@ -152,6 +152,49 @@
       </div>
     </header>
 
+    
+    <!-- SECTION: 1-DAY PERSONAL SUBSCRIPTION CARD (Always easily accessible) -->
+    <div class="glass-card rounded-4xl p-5 mb-4 relative overflow-hidden shadow-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-dark-900 to-black">
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">🎁</span>
+          <div>
+            <span id="user-sub-title" class="text-xs font-extrabold text-white block">Бесплатная подписка на 1 день</span>
+            <span class="text-[10px] text-slate-400 font-mono">
+              Ваш ID: <strong id="user-sub-id-badge" class="text-cyan-400">...</strong>
+            </span>
+          </div>
+        </div>
+        <span id="user-sub-status-badge" class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/30 animate-pulse">
+          1 день бесплатно
+        </span>
+      </div>
+
+      <div class="bg-dark-950/80 p-3 rounded-2xl border border-white/5 mb-3 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] text-slate-400">Срок действия:</div>
+          <div id="user-sub-expires-text" class="text-xs font-bold text-white">Осталось: ~24 часа (1 день)</div>
+        </div>
+        <div class="text-right">
+          <div class="text-[10px] text-slate-400">Скорость узла:</div>
+          <div class="text-xs font-mono font-bold text-emerald-400">10 Гбит/с • Безлимит</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="addSubscriptionToHapp()" class="py-2.5 px-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-black font-black text-xs text-center flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>В Happ (1 клик)</span>
+        </button>
+
+        <button onclick="selectTariff('5r', 'Тест 5 ₽', 5)" class="py-2.5 px-3 rounded-full bg-dark-800 hover:bg-dark-750 border border-cyan-500/40 text-cyan-300 font-extrabold text-xs text-center flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+          <span>🔥 Тест 5 ₽ (+1 день)</span>
+        </button>
+      </div>
+    </div>
+
     <!-- SECTION: Balance & Wallet Card (Круглые формы, черный стиль, баланс) -->
     <div class="glass-card rounded-4xl p-5 mb-4 relative overflow-hidden shadow-2xl border border-white/10">
       <!-- Glow ambient -->
@@ -963,7 +1006,131 @@
       if (method === 'card') card.className = "p-3 rounded-2xl border border-cyan-500 bg-cyan-950/30 flex items-center justify-between cursor-pointer";
     }
 
+    
+    // User Personal Subscription Engine
+    let userSubscription = {
+      userId: '74920184',
+      hasPaid: false,
+      planName: '🎁 Пробный период (1 день бесплатно)',
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      totalDays: 1,
+    };
+
+    function loadUserSubscription() {
+      try {
+        let uid = '74920184';
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+          uid = String(window.Telegram.WebApp.initDataUnsafe.user.id || uid);
+        } else {
+          const storedUid = localStorage.getItem('infinity_user_id');
+          if (storedUid) {
+            uid = storedUid;
+          } else {
+            uid = String(Math.floor(10000000 + Math.random() * 90000000));
+            localStorage.setItem('infinity_user_id', uid);
+          }
+        }
+        userSubscription.userId = uid;
+
+        const storedSub = localStorage.getItem('infinity_user_sub_' + uid);
+        if (storedSub) {
+          const parsed = JSON.parse(storedSub);
+          if (parsed && parsed.expiresAt) {
+            userSubscription = parsed;
+          }
+        }
+      } catch (e) {}
+
+      updateUserSubscriptionUI();
+    }
+
+    function saveUserSubscription() {
+      try {
+        localStorage.setItem('infinity_user_sub_' + userSubscription.userId, JSON.stringify(userSubscription));
+      } catch (e) {}
+      updateUserSubscriptionUI();
+    }
+
+    function updateUserSubscriptionUI() {
+      const idBadge = document.getElementById('user-sub-id-badge');
+      if (idBadge) idBadge.innerText = userSubscription.userId;
+
+      const titleEl = document.getElementById('user-sub-title');
+      const badgeEl = document.getElementById('user-sub-status-badge');
+      const expiresEl = document.getElementById('user-sub-expires-text');
+
+      const now = Date.now();
+      const remainingMs = Math.max(0, userSubscription.expiresAt - now);
+      const remainingHours = Math.floor(remainingMs / (3600 * 1000));
+      const remainingDays = Math.floor(remainingHours / 24);
+      const remainingHoursInDay = remainingHours % 24;
+
+      const formatted = remainingDays > 0 ? (remainingDays + ' дн. ' + remainingHoursInDay + ' ч.') : (remainingHours + ' ч.');
+
+      if (userSubscription.hasPaid) {
+        if (titleEl) titleEl.innerText = userSubscription.planName;
+        if (badgeEl) {
+          badgeEl.className = 'text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-cyan-500/15 text-cyan-300 border-cyan-500/30';
+          badgeEl.innerText = '🟢 Оплачено';
+        }
+        if (expiresEl) expiresEl.innerText = 'Осталось: ' + formatted + ' (активна)';
+      } else {
+        if (titleEl) titleEl.innerText = 'Бесплатная подписка на 1 день';
+        if (badgeEl) {
+          badgeEl.className = 'text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-500/15 text-emerald-400 border-emerald-500/30 animate-pulse';
+          badgeEl.innerText = '1 день бесплатно';
+        }
+        if (expiresEl) expiresEl.innerText = 'Осталось: ' + formatted + ' (пробный)';
+      }
+    }
+
+    function addSubscriptionToHapp() {
+      tgHaptic('medium');
+      showToast('Добавляем подписку в Happ...');
+      const url = 'happ://add/sub?url=' + encodeURIComponent(SUB_URL);
+      window.location.href = url;
+    }
+
+
     function executePayment() {
+      tgHaptic('heavy');
+      const daysMap = { '5r': 1, '1d': 1, '1w': 7, '1m': 30, '3m': 90, '6m': 180, '1y': 365 };
+      const daysToAdd = daysMap[selectedPlan.id] || 30;
+
+      const now = Date.now();
+      if (userSubscription.expiresAt > now) {
+        userSubscription.expiresAt += daysToAdd * 86400000;
+        userSubscription.totalDays = (userSubscription.totalDays || 1) + daysToAdd;
+      } else {
+        userSubscription.expiresAt = now + daysToAdd * 86400000;
+        userSubscription.totalDays = daysToAdd;
+      }
+
+      userSubscription.hasPaid = true;
+      userSubscription.planName = '🟢 ' + selectedPlan.name;
+      saveUserSubscription();
+
+      if (selectedPayMethod === 'balance') {
+        if (balance >= selectedPlan.price) {
+          balance -= selectedPlan.price;
+          document.getElementById('balance-amount').innerText = balance.toFixed(2);
+          document.getElementById('tab-balance-amount').innerText = balance.toFixed(2);
+          document.getElementById('modal-available-balance').innerText = balance.toFixed(2);
+          closeModal('modal-checkout');
+          showToast('Подписка «' + selectedPlan.name + '» оплачена! Дни добавлены! 🚀');
+        } else {
+          showToast('Недостаточно средств на балансе. Пополните баланс через СБП.');
+        }
+      } else {
+        closeModal('modal-checkout');
+        showToast('Оплата ' + selectedPlan.price + ' ₽ подтверждена! Дни добавлены! 🟢');
+        setTimeout(() => {
+          window.location.href = 'happ://add/sub?url=' + encodeURIComponent(SUB_URL);
+        }, 1200);
+      }
+    }
+
+function old_executePayment() {
       tgHaptic('heavy');
       if (selectedPayMethod === 'balance') {
         if (balance >= selectedPlan.price) {
@@ -1060,6 +1227,7 @@
     // Init
     document.addEventListener('DOMContentLoaded', () => {
       initTelegram();
+      loadUserSubscription();
       renderServers();
     });
     initTelegram();
