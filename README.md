@@ -1,8 +1,8 @@
-# ⚡ InfinityVPN — Официальный сайт & Подписка Happ
+# ⚡ InfinityVPN — Официальный репозиторий & Подписка Happ
 
-[![Статус](https://img.shields.io/badge/Статус-Активна-brightgreen?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
-[![Осталось дней](https://img.shields.io/badge/Осталось_дней-27_из_30-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
-[![Трафик](https://img.shields.io/badge/Трафик-90.0_из_100_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Статус](https://img.shields.io/badge/Статус-%D0%90%D0%BA%D1%82%D0%B8%D0%B2%D0%BD%D0%B0-brightgreen?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Осталось дней](https://img.shields.io/badge/Осталось_дней-26_из_30-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Трафик](https://img.shields.io/badge/Трафик-86.7_из_100_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
 
 👉 **Официальный сайт:** [https://said3828368163.github.io/InfinityVPN/](https://said3828368163.github.io/InfinityVPN/)  
 👉 **Telegram-бот:** [@InfinityVPN_serverHost_bot](https://t.me/InfinityVPN_serverHost_bot)  
@@ -20,7 +20,7 @@
 
 ## 📡 Ссылки на подписку для всех клиентов
 
-- **Универсальная подписка (Happ / Shadowrocket / Streisand / v2rayNG / Sing-box):**  
+- **Универсальная подписка (Happ / Shadowrocket / Streisand / v2rayNG):**  
   `https://said3828368163.github.io/InfinityVPN/sub.txt`
 - **Сырой список узлов (Plaintext RAW):**  
   `https://said3828368163.github.io/InfinityVPN/sub-raw.txt`
@@ -38,9 +38,12 @@
 | Параметр | Значение |
 | :--- | :--- |
 | **Текущий статус** | 🟢 Активна |
-| **Осталось дней** | ⏳ **27 из 30 дней** |
-| **Осталось часов** | ⏱️ **~631 ч.** |
-| **Остаток трафика** | 📶 **90.0 GB / 100 GB** |
-| **Прогресс срока** | `[██████████████████░░]` **90%** |
+| **Осталось дней** | ⏳ **26 из 30 дней** |
+| **Осталось часов** | ⏱️ **~620 ч.** |
+| **Остаток трафика** | 📶 **86.7 GB / 100 GB** |
+| **Прогресс срока** | `[█████████████████░░░]` **87%** |
 | **Дата активации** | 📅 25.09.2026 |
 | **Дата окончания** | 📅 25.10.2026 |
+
+---
+*Обновлено автоматически: Tue, 29 Sep 2026 20:54:08 GMT*
