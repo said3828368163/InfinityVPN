@@ -6,8 +6,8 @@ const START_DATE = new Date('2026-09-25T16:00:00Z');
 const TOTAL_DAYS = 30;
 const TOTAL_TRAFFIC_GB = 100;
 const EXPIRY_DATE = new Date(START_DATE.getTime() + (TOTAL_DAYS * 24 * 60 * 60 * 1000));
-
 const now = new Date();
+
 const msLeft = EXPIRY_DATE.getTime() - now.getTime();
 const rawDays = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
 const daysLeft = Math.max(0, Math.min(TOTAL_DAYS, rawDays));
@@ -26,20 +26,27 @@ const statusText = isExpired ? 'Истекла' : 'Активна';
 const statusBadge = isExpired ? 'Истекла-red' : 'Активна-brightgreen';
 const daysBadgeColor = daysLeft > 10 ? 'blue' : (daysLeft > 3 ? 'yellow' : 'red');
 
-// 1. Формируем sub-30d.txt (Trojan конфигурация для Happ / v2rayNG / Sing-box)
-const node1Name = encodeURIComponent(`🇺🇸 InfinityVPN [100GB | ${daysLeft} дней]`);
-const node2Name = encodeURIComponent(`⚡ InfinityVPN USA Fast [${daysLeft} дн]`);
-const infoNodeName = encodeURIComponent(`📊 Трафик: ${trafficLeft} / 100 GB | Осталось: ${daysLeft} дн.`);
+// Конфигурации серверов Trojan для Happ, v2rayNG, Sing-box, Streisand, Shadowrocket, Clash
+const nodes = [
+  'trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#' + encodeURIComponent('🇺🇸 InfinityVPN USA #1 (Miami 10G)'),
+  'trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#' + encodeURIComponent('⚡ InfinityVPN USA Fast [' + daysLeft + ' дн]'),
+  'trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#' + encodeURIComponent('🇩🇪 InfinityVPN Germany (Frankfurt)'),
+  'trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#' + encodeURIComponent('🇳🇱 InfinityVPN Netherlands (Amsterdam)'),
+  'trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#' + encodeURIComponent('🇫🇮 InfinityVPN Finland (Helsinki)'),
+  'trojan://00000000-0000-0000-0000-000000000000@127.0.0.1:443?security=none#' + encodeURIComponent('📊 Трафик: ' + trafficLeft + ' / 100 GB | ' + daysLeft + ' дн.')
+];
 
-const subContent = [
-  `trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#${node1Name}`,
-  `trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#${node2Name}`,
-  `trojan://00000000-0000-0000-0000-000000000000@127.0.0.1:443?security=none#${infoNodeName}`,
-  ''
-].join('\n');
+// Plaintext (разделители строк для клиентов, читающих сырой текст)
+const rawContent = nodes.join('\r\n') + '\r\n';
+// Base64 (универсальный стандарт V2Ray/Happ подписок)
+const base64Content = Buffer.from(rawContent, 'utf8').toString('base64');
 
-fs.writeFileSync(path.join(__dirname, 'sub-30d.txt'), subContent, 'utf8');
-fs.writeFileSync(path.join(__dirname, 'sub.txt'), subContent, 'utf8');
+// 1. Записываем файлы подписки
+// sub.txt и sub-30d.txt содержат универсальный Base64 для Happ, Shadowrocket, Streisand
+fs.writeFileSync(path.join(__dirname, 'sub.txt'), base64Content, 'utf8');
+fs.writeFileSync(path.join(__dirname, 'sub-30d.txt'), base64Content, 'utf8');
+// sub-raw.txt содержит сырые строки
+fs.writeFileSync(path.join(__dirname, 'sub-raw.txt'), rawContent, 'utf8');
 
 // 2. Формируем status.json
 const statusData = {
@@ -56,15 +63,37 @@ const statusData = {
 };
 fs.writeFileSync(path.join(__dirname, 'status.json'), JSON.stringify(statusData, null, 2), 'utf8');
 
-// 3. Формируем README.md с динамическими бейджами и мониторингом
-const readmeContent = `# ⚡ InfinityVPN — Официальный репозиторий
+// 3. Формируем README.md
+const readmeContent = `# ⚡ InfinityVPN — Официальный репозиторий & Подписка Happ
 
 [![Статус](https://img.shields.io/badge/Статус-${encodeURIComponent(statusText)}-${isExpired ? 'red' : 'brightgreen'}?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
 [![Осталось дней](https://img.shields.io/badge/Осталось_дней-${daysLeft}_из_${TOTAL_DAYS}-${daysBadgeColor}?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
 [![Трафик](https://img.shields.io/badge/Трафик-${trafficLeft}_из_${TOTAL_TRAFFIC_GB}_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
 
-👉 **Официальный Telegram-бот:** [@InfinityVPN_serverHost_bot](https://t.me/InfinityVPN_serverHost_bot)  
+👉 **Официальный сайт:** [https://said3828368163.github.io/InfinityVPN/](https://said3828368163.github.io/InfinityVPN/)  
+👉 **Telegram-бот:** [@InfinityVPN_serverHost_bot](https://t.me/InfinityVPN_serverHost_bot)  
 💬 **Поддержка:** [@jailbreak3919](https://t.me/jailbreak3919)
+
+---
+
+## 🚀 Мгновенное добавление подписки в Happ
+
+Нажмите на ссылку ниже на телефоне или компьютере, чтобы подписка автоматически открылась и добавилась в приложение **Happ**:
+
+👉 **[⚡ Открыть и добавить в Happ](happ://add/sub?url=https%3A%2F%2Fsaid3828368163.github.io%2FInfinityVPN%2Fsub.txt)**
+
+---
+
+## 📡 Ссылки на подписку для всех клиентов
+
+- **Универсальная подписка (Happ / Shadowrocket / Streisand / v2rayNG):**  
+  \`https://said3828368163.github.io/InfinityVPN/sub.txt\`
+- **Сырой список узлов (Plaintext RAW):**  
+  \`https://said3828368163.github.io/InfinityVPN/sub-raw.txt\`
+- **GitHub Raw зеркало:**  
+  \`https://raw.githubusercontent.com/said3828368163/InfinityVPN/main/sub.txt\`
+- **JSON статус подписки:**  
+  \`https://said3828368163.github.io/InfinityVPN/status.json\`
 
 ---
 
@@ -83,22 +112,7 @@ const readmeContent = `# ⚡ InfinityVPN — Официальный репози
 | **Дата окончания** | 📅 25.10.2026 |
 
 ---
-
-## 📡 Ссылки на подписку для Happ / v2rayNG / Sing-box
-
-- **GitHub Pages (прямая ссылка):**  
-  \`https://said3828368163.github.io/InfinityVPN/sub-30d.txt\`
-
-- **GitHub Raw:**  
-  \`https://raw.githubusercontent.com/said3828368163/InfinityVPN/main/sub-30d.txt\`
-
-- **JSON статус подписки:**  
-  \`https://said3828368163.github.io/InfinityVPN/status.json\`
-
----
-*Обновлено автоматически: ${now.toUTCString()}*
-`;
+*Обновлено автоматически: ${now.toUTCString()}*`;
 
 fs.writeFileSync(path.join(__dirname, 'README.md'), readmeContent, 'utf8');
-
 console.log(`Updated successfully: ${daysLeft} days left, ${trafficLeft} GB traffic left.`);
