@@ -1,0 +1,6 @@
+trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#%F0%9F%87%BA%F0%9F%87%B8%20InfinityVPN%20USA%20%231%20(Miami%2010G)
+trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#%E2%9A%A1%20InfinityVPN%20USA%20Fast%20%5B27%20%D0%B4%D0%BD%5D
+trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#%F0%9F%87%A9%F0%9F%87%AA%20InfinityVPN%20Germany%20(Frankfurt)
+trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#%F0%9F%87%B3%F0%9F%87%B1%20InfinityVPN%20Netherlands%20(Amsterdam)
+trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#%F0%9F%87%AB%F0%9F%87%AE%20InfinityVPN%20Finland%20(Helsinki)
+trojan://00000000-0000-0000-0000-000000000000@127.0.0.1:443?security=none#%F0%9F%93%8A%20%D0%A2%D1%80%D0%B0%D1%84%D0%B8%D0%BA%3A%2090.0%20%2F%20100%20GB%20%7C%2027%20%D0%B4%D0%BD.
