@@ -321,6 +321,21 @@
 
       <!-- Tariffs Grid -->
       <div class="grid grid-cols-2 gap-3">
+
+        <!-- 5 Rubles Test Tariff -->
+        <div onclick="selectTariff('5r', 'Тест 5 ₽', 5)" class="glass-card-active rounded-3xl p-4 cursor-pointer relative overflow-hidden transition-all flex flex-col justify-between active:scale-95 group shadow-lg shadow-cyan-950/40 border border-cyan-500/70">
+          <span class="absolute top-3 right-3 text-[9px] font-black bg-cyan-500 text-black px-2 py-0.5 rounded-full uppercase">
+            ТЕСТ
+          </span>
+          <div>
+            <span class="text-[11px] font-semibold text-cyan-300">Тестовый доступ</span>
+            <div class="text-2xl font-black text-white mt-1">5 ₽</div>
+            <span class="text-[10px] text-slate-400">Мгновенный ключ</span>
+          </div>
+          <button class="mt-4 w-full py-2 rounded-full bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs transition-all shadow-md shadow-cyan-500/20">
+            Оформить 5 ₽
+          </button>
+        </div>
         
         <!-- 1 Day -->
         <div onclick="selectTariff('1d', '1 День', 29)" class="glass-card rounded-3xl p-4 cursor-pointer hover:border-cyan-500/50 transition-all flex flex-col justify-between active:scale-95 group">
@@ -781,7 +796,7 @@
           tg.MainButton.show();
           tg.MainButton.onClick(function() {
             tgHaptic('heavy');
-            window.location.href = 'happ://add/sub?url=' + encodeURIComponent(SUB_URL);
+            window.location.href = 'https://ais-dev-yph4bjkylhmtpvbxbocjqk-632699410123.europe-west2.run.app/pay/' + (selectedPlan.id || '5r');
           });
         }
       }
