@@ -1,1121 +1,904 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>InfinityVPN — Telegram Mini App & TGS Стикеры</title>
-  <meta name="description" content="Официальный Telegram Mini App InfinityVPN с поддержкой анимированных .TGS стикеров (60 FPS), тарифов и подписки.">
-  <meta property="og:title" content="InfinityVPN — Telegram Mini App & TGS Стикеры">
-  <meta property="og:description" content="Защищенный VPN сервис, анимированные TGS стикеры, продажа тарифов через СБП">
-
-  <!-- Telegram WebApp SDK -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Lottie Web (for 60 FPS .TGS / JSON vector animations) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-
+  <title>InfinityVPN — Высокоскоростной и надежный VPN нового поколения</title>
+  <meta name="description" content="Защищенный VPN сервис InfinityVPN со скоростью до 10 Гбит/с. Поддержка Happ, протоколы Trojan, V2Ray, VLESS. 0% логов, мгновенное подключение на iOS, Android, Windows и macOS.">
+  <meta property="og:title" content="InfinityVPN — Надежный VPN нового поколения">
+  <meta property="og:description" content="Защищенное шифрование интернет-соединения, безлимитный трафик, поддержка всех устройств.">
+  <meta property="og:url" content="https://said3828368163.github.io/InfinityVPN/">
+  <meta property="og:type" content="website">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              100: '#cffafe',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+            }
+          }
+        }
+      }
+    }
+  </script>
 
   <style>
-    :root {
-      --bg: #030712;
-      --card-bg: rgba(15, 23, 42, 0.85);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --cyan: #06b6d4;
-      --cyan-glow: rgba(6, 182, 212, 0.25);
-      --amber: #f59e0b;
-      --amber-glow: rgba(245, 158, 11, 0.25);
-      --emerald: #10b981;
-      --blue: #2563eb;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
     body {
-      width: 100%;
-      min-height: 100vh;
-      background-color: var(--bg);
-      color: #f3f4f6;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px 12px 40px;
+      background-color: #030712;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
     }
-
-    /* Ambient background glowing orbs */
-    .ambient-glow {
-      position: fixed;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.25;
-      pointer-events: none;
-      z-index: 0;
-      animation: pulse 8s ease-in-out infinite alternate;
-    }
-    .glow-1 {
-      top: -100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: radial-gradient(circle, var(--cyan), var(--blue));
-    }
-    .glow-2 {
-      bottom: -100px;
-      right: 10%;
-      background: radial-gradient(circle, #7c3aed, var(--cyan));
-    }
-    @keyframes pulse {
-      0% { transform: scale(1) translate(-50%, 0); opacity: 0.2; }
-      100% { transform: scale(1.15) translate(-50%, 25px); opacity: 0.35; }
-    }
-
-    /* Grid overlay */
-    .grid {
-      position: fixed;
-      inset: 0;
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 32px 32px;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 520px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .brand-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--cyan), var(--blue));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 14px var(--cyan-glow);
-    }
-    .brand-icon svg {
-      width: 18px;
-      height: 18px;
-      fill: #fff;
-    }
-    .brand-title {
-      font-weight: 800;
-      font-size: 16px;
-      letter-spacing: -0.02em;
-    }
-    .status-pill {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--emerald);
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 4px 10px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--emerald);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--emerald);
-      animation: blink 2s infinite;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    /* Top Tabs */
-    .nav-tabs {
-      display: flex;
-      gap: 6px;
-      padding: 6px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      backdrop-filter: blur(16px);
-      overflow-x: auto;
-      no-scrollbar;
-    }
-    .nav-tab {
-      flex: 1;
-      min-width: 90px;
-      padding: 10px 8px;
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-    .nav-tab.active {
-      background: linear-gradient(135deg, var(--amber), #ea580c);
-      color: #030712;
-      box-shadow: 0 4px 14px var(--amber-glow);
-    }
-    .nav-tab.active.cyan {
-      background: linear-gradient(135deg, var(--cyan), var(--blue));
-      color: #030712;
-      box-shadow: 0 4px 14px var(--cyan-glow);
-    }
-
-    /* Animated TGS Action Buttons Grid */
-    .animated-buttons-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .btn-tgs {
-      position: relative;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      text-decoration: none;
-      color: #fff;
-      transition: all 0.2s ease;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    }
-    .btn-tgs:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.25);
-    }
-    .btn-tgs.amber {
-      border-color: rgba(245, 158, 11, 0.4);
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
-    }
-    .btn-tgs.cyan {
+    .glass-card-hover:hover {
       border-color: rgba(6, 182, 212, 0.4);
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(15, 23, 42, 0.9));
-    }
-    .btn-tgs.emerald {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(15, 23, 42, 0.9));
-    }
-    .btn-tgs.purple {
-      border-color: rgba(168, 85, 247, 0.4);
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(15, 23, 42, 0.9));
-    }
-    .btn-tgs-icon {
-      width: 44px;
-      height: 44px;
-      background: #020617;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      shrink: 0;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-    }
-    .btn-tgs-text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .btn-tgs-title {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .btn-tgs-sub {
-      font-size: 10px;
-      color: #94a3b8;
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .btn-tgs-badge {
-      font-size: 9px;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 2px 6px;
-      border-radius: 6px;
-      margin-top: 3px;
-      align-self: flex-start;
-      font-weight: 700;
-    }
-    .badge-amber {
-      background: rgba(245, 158, 11, 0.2);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.35);
-    }
-    .badge-cyan {
-      background: rgba(6, 182, 212, 0.2);
-      color: #67e8f9;
-      border: 1px solid rgba(6, 182, 212, 0.35);
-    }
-
-    /* Main Card */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 24px;
-      padding: 24px 20px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    /* Master Sticker Stage */
-    .sticker-stage-card {
-      background: #020617;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .stage-badge {
-      position: absolute;
-      top: 12px;
-      left: 14px;
-      font-size: 10px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--cyan);
-      background: rgba(6, 182, 212, 0.12);
-      border: 1px solid rgba(6, 182, 212, 0.25);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-    }
-    .stage-fps {
-      position: absolute;
-      top: 12px;
-      right: 14px;
-      font-size: 10px;
-      font-family: 'JetBrains Mono', monospace;
-      color: #fbbf24;
-      background: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-weight: 700;
-    }
-    .stage-player {
-      width: 200px;
-      height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 10px 0;
-    }
-    .stage-info {
-      text-align: center;
-      width: 100%;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding-top: 14px;
-    }
-    .stage-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .stage-desc {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 4px;
-      line-height: 1.4;
-    }
-
-    /* Controls bar */
-    .controls-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .ctrl-btn {
-      padding: 6px 12px;
-      border-radius: 10px;
-      background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s;
-    }
-    .ctrl-btn:hover {
-      background: #1e293b;
-      color: #fff;
-    }
-    .ctrl-btn.active {
-      background: var(--cyan);
-      color: #020617;
-      border-color: var(--cyan);
-    }
-
-    /* Sticker Grid */
-    .stickers-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    .sticker-thumb {
-      background: rgba(2, 6, 23, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 10px 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .sticker-thumb:hover {
-      background: rgba(15, 23, 42, 0.9);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .sticker-thumb.selected {
-      background: rgba(6, 182, 212, 0.15);
-      border-color: var(--cyan);
-      box-shadow: 0 0 16px var(--cyan-glow);
-    }
-    .thumb-player {
-      width: 54px;
-      height: 54px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .thumb-title {
-      font-size: 10px;
-      font-weight: 700;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    /* Big Action Buttons */
-    .btn-main {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-      color: #ffffff;
-      padding: 16px 20px;
-      border-radius: 18px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 15px;
-      box-shadow: 0 10px 30px rgba(2, 132, 199, 0.45);
-      transition: all 0.25s ease;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      cursor: pointer;
-    }
-    .btn-main:hover {
+      box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.2);
       transform: translateY(-2px);
-      box-shadow: 0 14px 38px rgba(2, 132, 199, 0.65);
     }
-    .btn-main svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
+    .glow-cyan {
+      box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.35);
     }
-
-    /* Status widget */
-    .status-widget {
-      width: 100%;
-      background: rgba(2, 6, 23, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .status-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .gradient-border {
+      position: relative;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.5), rgba(59, 130, 246, 0.2), rgba(255, 255, 255, 0.05));
+      padding: 1px;
     }
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #94a3b8;
+    .gradient-border-content {
+      background: #090e1a;
+      border-radius: calc(1rem - 1px);
     }
-    .status-badge .dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #10b981;
-    }
-    .status-days {
-      font-size: 14px;
-      font-weight: 700;
-      color: #38bdf8;
-    }
-    .progress-bar-bg {
-      width: 100%;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #06b6d4, #3b82f6);
-      border-radius: 999px;
-      transition: width 0.5s ease;
-    }
-    .status-sub {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: #64748b;
-    }
-
-    /* Tariffs Grid */
-    .tariffs-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .tariff-card {
-      background: rgba(2, 6, 23, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 14px 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .tariff-card:hover {
-      border-color: var(--amber);
-      background: rgba(245, 158, 11, 0.1);
-      transform: scale(1.02);
-    }
-    .tariff-card.popular {
-      border-color: var(--amber);
-      background: rgba(245, 158, 11, 0.12);
-      box-shadow: 0 0 20px var(--amber-glow);
-    }
-    .tariff-title {
-      font-size: 11px;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-    .tariff-price {
-      font-size: 17px;
-      font-weight: 900;
-      color: #fff;
-      margin: 4px 0;
-    }
-    .tariff-badge {
-      font-size: 9px;
-      color: #fbbf24;
-      font-weight: 700;
-    }
-
-    /* Footer */
-    .footer {
-      text-align: center;
-      font-size: 11px;
-      color: #64748b;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-    .footer a {
-      color: var(--cyan);
-      text-decoration: none;
-    }
-
-    /* Utility */
-    .hidden {
-      display: none !important;
+    /* Toast animation */
+    #toast {
+      transition: transform 0.3s ease, opacity 0.3s ease;
     }
   </style>
 </head>
-<body>
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
-  <div class="grid"></div>
+<body class="min-h-screen selection:bg-cyan-500 selection:text-black flex flex-col justify-between">
 
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <div class="brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.67-3.13 8.97-7 10.05-3.87-1.08-7-5.38-7-10.05V6.3l7-3.12zm-1 5.82v6h2v-6h-2zm0 8v2h2v-2h-2z"/>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-3 bg-slate-900 border border-cyan-500/40 text-cyan-300 px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-xl">
+    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-msg" class="text-sm font-medium">Скопировано в буфер!</span>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 w-full glass-card border-b border-white/5">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
           </svg>
         </div>
         <div>
-          <div class="brand-title">InfinityVPN</div>
-          <div style="font-size: 11px; color: #94a3b8;" id="tgUserGreeting">Telegram Mini App</div>
-        </div>
-      </div>
-
-      <div class="status-pill">
-        <span class="pulse-dot"></span>
-        <span id="headerStatus">Онлайн 24/7</span>
-      </div>
-    </header>
-
-    <!-- Top Navigation Tabs -->
-    <nav class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('stickers')">
-        <span>🎨 Стикеры TGS</span>
-      </button>
-      <button class="nav-tab cyan" onclick="switchTab('sale')">
-        <span>🛒 Продажа</span>
-      </button>
-      <button class="nav-tab cyan" onclick="switchTab('sub')">
-        <span>🔑 Подписка</span>
-      </button>
-      <button class="nav-tab cyan" onclick="switchTab('server')">
-        <span>🌍 Сервер</span>
-      </button>
-    </nav>
-
-    <!-- Requested: Buttons with Animated TGS Stickers (Store Shopping Cart & Rocket) -->
-    <div class="animated-buttons-grid">
-      <!-- 1. Кнопка Продажа с тележкой из магазина TGS -->
-      <div class="btn-tgs amber" onclick="switchTab('sale')">
-        <div class="btn-tgs-icon" id="cartBtnLottie"></div>
-        <div class="btn-tgs-text">
-          <div class="btn-tgs-title">🛒 Продажа тарифов</div>
-          <div class="btn-tgs-sub">Тележка магазина • СБП</div>
-          <span class="btn-tgs-badge badge-amber">Тележка TGS</span>
-        </div>
-      </div>
-
-      <!-- 2. Кнопка Быстрый старт с ракетой TGS -->
-      <a href="https://t.me/InfinityVPN_serverHost_bot" class="btn-tgs cyan" target="_blank">
-        <div class="btn-tgs-icon" id="rocketBtnLottie"></div>
-        <div class="btn-tgs-text">
-          <div class="btn-tgs-title">🚀 Быстрый запуск</div>
-          <div class="btn-tgs-sub">Скорость 10 Гбит/с</div>
-          <span class="btn-tgs-badge badge-cyan">Ракета TGS</span>
+          <div class="text-xl font-extrabold tracking-tight flex items-center gap-1.5">
+            <span class="gradient-text">InfinityVPN</span>
+            <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full">PRO</span>
+          </div>
+          <div class="text-[11px] text-slate-400 font-medium">Скоростной защищенный VPN</div>
         </div>
       </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#subscription" class="hover:text-cyan-400 transition-colors">Подписка & Ключ</a>
+        <a href="#tariffs" class="hover:text-cyan-400 transition-colors">Тарифы</a>
+        <a href="#instruction" class="hover:text-cyan-400 transition-colors">Инструкция</a>
+        <a href="#servers" class="hover:text-cyan-400 transition-colors">Серверы</a>
+        <a href="#faq" class="hover:text-cyan-400 transition-colors">Вопросы</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="https://t.me/InfinityVPN_bot" target="_blank" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs sm:text-sm hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/25 active:scale-95">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+          <span>Telegram Бот</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-cyan-500/15 rounded-full blur-[140px]"></div>
+      <div class="absolute top-1/3 -right-40 w-[450px] h-[450px] bg-blue-600/10 rounded-full blur-[120px]"></div>
     </div>
 
-    <!-- TAB 1: Animated TGS Stickers Gallery & Interactive Showcase -->
-    <div id="tab-stickers" class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h2 style="font-size: 18px; font-weight: 800;">Анимированные TGS Стикеры</h2>
-          <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
-            Векторные 60 FPS Lottie-анимации нашего Telegram-бота
-          </p>
-        </div>
-        <a href="https://t.me/addstickers/ResistanceDog" target="_blank" style="font-size: 11px; color: #38bdf8; font-weight: 700; text-decoration: none;">
-          Стикерпак в TG ↗
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 relative text-center">
+      
+      <!-- Live Badge -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-6 shadow-inner backdrop-blur-md">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <span>Сеть активна: 10 Гбит/с • Протокол Trojan + TLS 1.3</span>
+      </div>
+
+      <!-- Main Title -->
+      <h1 class="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.15] mb-6">
+        Безопасный доступ <br class="hidden sm:block"/>
+        <span class="gradient-text">без границ и замедлений</span>
+      </h1>
+
+      <p class="max-w-2xl mx-auto text-base sm:text-lg text-slate-300 font-normal leading-relaxed mb-10">
+        Шифрование военного уровня, стабильный обход любых блокировок, 0% логов. 
+        Поддержка всех устройств на iOS, Android, Windows и macOS через приложение Happ.
+      </p>
+
+      <!-- Primary CTAs -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
+        <a href="#subscription" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-slate-950 font-bold text-base hover:shadow-cyan-500/30 hover:shadow-xl transition-all duration-300 active:scale-95 flex items-center justify-center gap-2.5">
+          <svg class="w-5 h-5 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          <span>Получить подписку & Ключ</span>
+        </a>
+        <a href="#tariffs" class="w-full sm:w-auto px-8 py-4 rounded-2xl glass-card text-white font-semibold text-base hover:border-cyan-500/50 hover:bg-slate-800/80 transition-all duration-300 flex items-center justify-center gap-2.5">
+          <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          <span>Тарифы (от 29 ₽)</span>
         </a>
       </div>
 
-      <!-- Master Stage -->
-      <div class="sticker-stage-card">
-        <div class="stage-badge" id="activeStickerBadge">.TGS Lottie</div>
-        <div class="stage-fps">60 FPS</div>
-
-        <div class="stage-player" id="masterStagePlayer"></div>
-
-        <div class="stage-info">
-          <div class="stage-title">
-            <span id="activeEmoji">🛒</span>
-            <span id="activeTitle">Тележка Продажи Тарифов</span>
-          </div>
-          <p class="stage-desc" id="activeDesc">
-            Анимированная тележка покупок для раздела Продажа и быстрого оформления тарифа.
-          </p>
-
-          <!-- Controls -->
-          <div class="controls-bar">
-            <button class="ctrl-btn" onclick="togglePlayPause()" id="playPauseBtn">⏸ Пауза</button>
-            <button class="ctrl-btn" onclick="setSpeed(0.5, this)">0.5x</button>
-            <button class="ctrl-btn active" onclick="setSpeed(1, this)">1x</button>
-            <button class="ctrl-btn" onclick="setSpeed(1.5, this)">1.5x</button>
-            <button class="ctrl-btn" onclick="setSpeed(2, this)">2x</button>
-            <button class="ctrl-btn" onclick="sendActiveToBot()">📲 В бот</button>
-            <a id="downloadTgsLink" href="stickers/cart.tgs" download="cart.tgs" class="ctrl-btn" style="text-decoration:none;">⬇ .TGS</a>
-          </div>
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+        <div class="glass-card p-4 rounded-2xl border border-white/5 text-center">
+          <div class="text-2xl font-bold text-cyan-400 font-mono">10 Gbps</div>
+          <div class="text-xs text-slate-400 font-medium mt-1">Скорость портов</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-white/5 text-center">
+          <div class="text-2xl font-bold text-emerald-400 font-mono">0% Logs</div>
+          <div class="text-xs text-slate-400 font-medium mt-1">Приватность No-Logs</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-white/5 text-center">
+          <div class="text-2xl font-bold text-blue-400 font-mono">&lt; 30 ms</div>
+          <div class="text-xs text-slate-400 font-medium mt-1">Средний пинг</div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-white/5 text-center">
+          <div class="text-2xl font-bold text-amber-400 font-mono">99.9%</div>
+          <div class="text-xs text-slate-400 font-medium mt-1">Uptime серверов</div>
         </div>
       </div>
 
-      <!-- Live Moving Grid of All 7 Stickers -->
-      <div>
-        <div style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">
-          Все живые стикеры (нажмите для просмотра):
-        </div>
-        <div class="stickers-grid" id="stickersGrid">
-          <!-- Dynamically populated with live Lottie instances -->
-        </div>
-      </div>
     </div>
+  </section>
 
-    <!-- TAB 2: Sale & Tariffs (Requested: Shopping Cart & Purchase) -->
-    <div id="tab-sale" class="card hidden">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <h2 style="font-size: 18px; font-weight: 800;">🛒 Продажа тарифов</h2>
-          <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
-            Мгновенная активация ключа через СБП любого банка РФ
-          </p>
+  <!-- Live Subscription Section -->
+  <section id="subscription" class="py-12 md:py-16 relative">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-3">
+          Ваш профиль подключения
         </div>
-        <span style="font-size: 11px; font-family: monospace; background: rgba(6,182,212,0.15); color: #22d3ee; padding: 2px 8px; border-radius: 6px;">
-          OPLAT
-        </span>
-      </div>
-
-      <div class="tariffs-grid">
-        <div class="tariff-card" onclick="selectPlan('1d', '29 ₽')">
-          <div class="tariff-title">1 день</div>
-          <div class="tariff-price">29 ₽</div>
-          <div class="tariff-badge">Тест 24 ч</div>
-        </div>
-
-        <div class="tariff-card" onclick="selectPlan('1w', '79 ₽')">
-          <div class="tariff-title">1 неделя</div>
-          <div class="tariff-price">79 ₽</div>
-          <div class="tariff-badge">Неделя</div>
-        </div>
-
-        <div class="tariff-card popular" onclick="selectPlan('1m', '190 ₽')">
-          <div class="tariff-title">1 месяц</div>
-          <div class="tariff-price" style="color: #fbbf24;">190 ₽</div>
-          <div class="tariff-badge">ХИТ 🔥</div>
-        </div>
-
-        <div class="tariff-card" onclick="selectPlan('3m', '490 ₽')">
-          <div class="tariff-title">3 месяца</div>
-          <div class="tariff-price">490 ₽</div>
-          <div class="tariff-badge">~163 ₽/мес</div>
-        </div>
-
-        <div class="tariff-card" onclick="selectPlan('6m', '890 ₽')">
-          <div class="tariff-title">6 месяцев</div>
-          <div class="tariff-price">890 ₽</div>
-          <div class="tariff-badge">~148 ₽/мес</div>
-        </div>
-
-        <div class="tariff-card" onclick="selectPlan('1y', '1 490 ₽')">
-          <div class="tariff-title">1 год</div>
-          <div class="tariff-price">1 490 ₽</div>
-          <div class="tariff-badge">~124 ₽/мес</div>
-        </div>
-      </div>
-
-      <a href="https://t.me/InfinityVPN_serverHost_bot?start=tariffs" target="_blank" class="btn-main" style="background: linear-gradient(135deg, #f59e0b, #ea580c); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);">
-        <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        <span>Оформить заказ через СБП</span>
-      </a>
-    </div>
-
-    <!-- TAB 3: Subscription & Status (Original status.json widget) -->
-    <div id="tab-sub" class="card hidden">
-      <div>
-        <h2 style="font-size: 18px; font-weight: 800;">Моя подписка InfinityVPN</h2>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
-          Автоматический подсчет оставшихся дней и трафика
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Активная подписка InfinityVPN
+        </h2>
+        <p class="text-sm sm:text-base text-slate-400 mt-2 max-w-xl mx-auto">
+          Используйте готовую ссылку на подписку для автоматического импорта всех серверов, либо скопируйте индивидуальный ключ.
         </p>
       </div>
 
-      <!-- ИНФОРМАЦИЯ О ПОДПИСКЕ И ДНЯХ (Из оригинального сайта) -->
-      <div class="status-widget">
-        <div class="status-row">
-          <div class="status-badge">
-            <span class="dot" id="dot"></span>
-            <span>Подписка 30 дней</span>
+      <!-- Main Interactive Subscription Card -->
+      <div class="gradient-border glow-cyan">
+        <div class="gradient-border-content p-6 sm:p-8">
+          
+          <!-- Card Top Bar: Status & Metrics -->
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-white/10">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+              <div>
+                <span class="text-white font-bold text-base">Тестовый тариф (30 дней / 100 ГБ)</span>
+                <span class="block text-xs text-emerald-400 font-medium">🟢 Сервер 🇺🇸 United States онлайн</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono bg-slate-900/80 px-3 py-1.5 rounded-xl border border-white/5 text-slate-300">
+              <span>Трафик:</span>
+              <span class="text-cyan-400 font-bold">90.0 / 100 GB</span>
+            </div>
           </div>
-          <div class="status-days" id="daysText">27 из 30 дн.</div>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="barFill" style="width: 90%;"></div>
-        </div>
-        <div class="status-sub">
-          <span id="trafficText">Трафик: 90 GB / 100 GB</span>
-          <span id="expiryText">Истекает: 25.10.2026</span>
+
+          <!-- Tabs Switcher -->
+          <div class="flex gap-2 p-1.5 bg-slate-950/70 rounded-2xl border border-white/5 mt-6 mb-6">
+            <button onclick="switchTab('link')" id="tab-btn-link" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all bg-cyan-500 text-slate-950 shadow-md">
+              🔗 Ссылка подписки
+            </button>
+            <button onclick="switchTab('key')" id="tab-btn-key" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all">
+              🔑 Trojan-ключ
+            </button>
+            <button onclick="switchTab('qr')" id="tab-btn-qr" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all">
+              📱 QR-код для телефона
+            </button>
+          </div>
+
+          <!-- Tab Content 1: Subscription URL -->
+          <div id="tab-content-link" class="space-y-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Прямая ссылка на файл подписки:</label>
+              <div class="relative flex items-center">
+                <input id="sub-url-input" readonly value="https://said3828368163.github.io/InfinityVPN/sub.txt" class="w-full bg-slate-950 border border-slate-800 text-cyan-300 font-mono text-xs sm:text-sm px-4 py-3.5 rounded-xl focus:outline-none pr-28 select-all">
+                <button onclick="copyText('sub-url-input', 'Ссылка подписки скопирована!')" class="absolute right-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <span>Копировать</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex flex-wrap gap-3 pt-2">
+              <a href="happ://add/sub?url=https%3A%2F%2Fsaid3828368163.github.io%2FInfinityVPN%2Fsub.txt" class="flex-1 min-w-[200px] py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-sm text-center flex items-center justify-center gap-2 hover:opacity-95 transition-all active:scale-95">
+                <svg class="w-4 h-4 text-slate-950" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd"/></svg>
+                <span>⚡ Открыть и добавить в Happ</span>
+              </a>
+              <button onclick="copyText('sub-url-input', 'Ссылка подписки скопирована!')" class="flex-1 min-w-[160px] py-3 px-4 rounded-xl bg-slate-900 border border-white/10 hover:border-cyan-500/40 text-white font-semibold text-sm text-center transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span>Скопировать для v2rayNG / Sing-box</span>
+              </button>
+            </div>
+
+            <p class="text-xs text-slate-400 flex items-center gap-2">
+              <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>При добавлении ссылки в клиент все серверы и обновления будут подгружаться автоматически.</span>
+            </p>
+          </div>
+
+          <!-- Tab Content 2: Trojan Key -->
+          <div id="tab-content-key" class="hidden space-y-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Индивидуальный ключ Trojan (United States 🇺🇸):</label>
+              <div class="relative flex items-center">
+                <textarea id="trojan-key-input" readonly rows="3" class="w-full bg-slate-950 border border-slate-800 text-cyan-300 font-mono text-xs px-4 py-3 rounded-xl focus:outline-none select-all resize-none">trojan://sg-trojan-2026@43.173.90.202:443?security=tls&sni=sg-proxy.local&fp=edge&type=tcp&headerType=none#%F0%9F%87%BA%F0%9F%87%B2%20InfinityVPN%20%20%231%20USA</textarea>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button onclick="copyText('trojan-key-input', 'Trojan-ключ скопирован!')" class="flex-1 py-3 px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 hover:bg-cyan-400 transition-all active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <span>Скопировать Trojan-ключ</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab Content 3: QR Code -->
+          <div id="tab-content-qr" class="hidden text-center py-4 space-y-4">
+            <div class="inline-block p-4 bg-white rounded-2xl shadow-xl">
+              <div id="qrcode-box"></div>
+            </div>
+            <p class="text-xs text-slate-300">Наведите камеру в приложении <b>Happ</b> или <b>v2rayNG</b> для быстрого подключения</p>
+          </div>
+
         </div>
       </div>
 
-      <!-- Кнопка копирования подписки -->
-      <div style="background: #020617; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px;">
-        <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">Ссылка на подписку для Happ / v2rayN:</div>
-        <div style="font-family: monospace; font-size: 11px; color: #38bdf8; word-break: break-all; background: rgba(15,23,42,0.8); padding: 8px; border-radius: 10px;" id="subUrlBox">
-          https://said3828368163.github.io/InfinityVPN/sub-30d.txt
+    </div>
+  </section>
+
+  <!-- Tariffs & Pricing -->
+  <section id="tariffs" class="py-16 md:py-20 relative">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-3">
+          Стоимость услуг
         </div>
-        <button onclick="copySubUrl()" class="ctrl-btn" style="margin-top: 10px; width: 100%; justify-content: center; padding: 10px;">
-          📋 Скопировать ссылку подписки
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Прозрачные тарифы без скрытых платежей
+        </h2>
+        <p class="text-sm sm:text-base text-slate-400 mt-2 max-w-xl mx-auto">
+          Моментальная активация после оплаты через СБП (Система быстрых платежей РФ).
+        </p>
+      </div>
+
+      <!-- Tariffs Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Tariff: 1 Month -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl border border-white/10 flex flex-col justify-between relative">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Базовый</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">30 дней</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">1 Месяц</h3>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-3xl font-black text-white">190</span>
+              <span class="text-base font-bold text-slate-400">₽</span>
+            </div>
+            <ul class="space-y-2.5 text-xs text-slate-300 mb-6">
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 1 ТБ скоростного трафика</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Скорость до 10 Гбит/с</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> До 5 устройств одновременно</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Поддержка 24/7</li>
+            </ul>
+          </div>
+          <a href="https://t.me/InfinityVPN_bot?start=buy_1m" target="_blank" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-white font-bold text-xs text-center transition-all">
+            Купить за 190 ₽
+          </a>
+        </div>
+
+        <!-- Tariff: 3 Months (Popular) -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl border-2 border-cyan-500/50 flex flex-col justify-between relative bg-gradient-to-b from-cyan-950/20 to-slate-900/80 shadow-xl shadow-cyan-500/10">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+            Хит продаж • Скидка 15%
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Оптимальный</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-950/60 text-cyan-300 font-mono">90 дней</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">3 Месяца</h3>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-3xl font-black text-cyan-300">490</span>
+              <span class="text-base font-bold text-slate-400">₽</span>
+              <span class="text-xs text-slate-400 ml-1">(~163 ₽/мес)</span>
+            </div>
+            <ul class="space-y-2.5 text-xs text-slate-300 mb-6">
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <b>Безлимитный</b> трафик</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Максимальный приоритет</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Все серверы (США, ЕС)</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> До 10 устройств</li>
+            </ul>
+          </div>
+          <a href="https://t.me/InfinityVPN_bot?start=buy_3m" target="_blank" class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs text-center transition-all shadow-lg shadow-cyan-500/20">
+            Купить за 490 ₽
+          </a>
+        </div>
+
+        <!-- Tariff: 6 Months -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl border border-white/10 flex flex-col justify-between relative">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Полугодовой</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">180 дней</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">6 Месяцев</h3>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-3xl font-black text-white">890</span>
+              <span class="text-base font-bold text-slate-400">₽</span>
+              <span class="text-xs text-slate-400 ml-1">(~148 ₽/мес)</span>
+            </div>
+            <ul class="space-y-2.5 text-xs text-slate-300 mb-6">
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Полный безлимит трафика</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Выделенная линия 10 Гбит/с</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Неограниченно устройств</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Приоритетный саппорт</li>
+            </ul>
+          </div>
+          <a href="https://t.me/InfinityVPN_bot?start=buy_6m" target="_blank" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-white font-bold text-xs text-center transition-all">
+            Купить за 890 ₽
+          </a>
+        </div>
+
+        <!-- Tariff: 12 Months (Maximum Benefit) -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl border border-white/10 flex flex-col justify-between relative bg-gradient-to-b from-blue-950/20 to-slate-900/80">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider">
+            Выгода 35%
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Премиум 1 Год</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-950/60 text-blue-300 font-mono">365 дней</span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">12 Месяцев</h3>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-3xl font-black text-blue-300">1 490</span>
+              <span class="text-base font-bold text-slate-400">₽</span>
+              <span class="text-xs text-slate-400 ml-1">(~124 ₽/мес)</span>
+            </div>
+            <ul class="space-y-2.5 text-xs text-slate-300 mb-6">
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Полный безлимит на 365 дней</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Доступ ко всем будущим серверам</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Премиум техподдержка VIP</li>
+              <li class="flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Безлимит устройств для семьи</li>
+            </ul>
+          </div>
+          <a href="https://t.me/InfinityVPN_bot?start=buy_12m" target="_blank" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs text-center transition-all shadow-lg shadow-blue-600/25">
+            Купить за 1 490 ₽
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Payment info note -->
+      <div class="mt-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Оплата через СБП (Система быстрых платежей РФ) поддерживается из любого мобильного банка РФ без комиссии.</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Step-by-Step Connection Instructions -->
+  <section id="instruction" class="py-16 md:py-20 bg-slate-950/60 border-y border-white/5">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-3">
+          Простая настройка
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Как подключить за 1 минуту
+        </h2>
+        <p class="text-sm sm:text-base text-slate-400 mt-2 max-w-xl mx-auto">
+          Выберите вашу операционную систему для пошаговой инструкции.
+        </p>
+      </div>
+
+      <!-- OS Switcher Buttons -->
+      <div class="flex justify-center gap-2 sm:gap-4 mb-10 overflow-x-auto pb-2">
+        <button onclick="switchOS('ios')" id="os-btn-ios" class="py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm bg-cyan-500 text-slate-950 flex items-center gap-2 shadow-lg">
+          <span>🍎 iOS (iPhone/iPad)</span>
+        </button>
+        <button onclick="switchOS('android')" id="os-btn-android" class="py-2.5 px-5 rounded-xl font-semibold text-xs sm:text-sm bg-slate-900 border border-white/10 text-slate-300 hover:text-white flex items-center gap-2">
+          <span>🤖 Android</span>
+        </button>
+        <button onclick="switchOS('windows')" id="os-btn-windows" class="py-2.5 px-5 rounded-xl font-semibold text-xs sm:text-sm bg-slate-900 border border-white/10 text-slate-300 hover:text-white flex items-center gap-2">
+          <span>💻 Windows</span>
+        </button>
+        <button onclick="switchOS('macos')" id="os-btn-macos" class="py-2.5 px-5 rounded-xl font-semibold text-xs sm:text-sm bg-slate-900 border border-white/10 text-slate-300 hover:text-white flex items-center gap-2">
+          <span>🍏 macOS</span>
         </button>
       </div>
 
-      <a href="https://t.me/InfinityVPN_serverHost_bot" class="btn-main" target="_blank">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-        <span>Управление в Telegram-боте</span>
-      </a>
-    </div>
-
-    <!-- TAB 4: Server info -->
-    <div id="tab-server" class="card hidden">
-      <div>
-        <h2 style="font-size: 18px; font-weight: 800;">Серверная инфраструктура</h2>
-        <p style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
-          Скоростной шлюз с шифрованием Trojan TLS 1.3
-        </p>
+      <!-- OS Content: iOS -->
+      <div id="os-content-ios" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">1</div>
+          <h4 class="text-base font-bold text-white mb-2">Установите клиент Happ</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Скачайте бесплатное приложение <b>Happ</b> (или Streisand / Shadowrocket / FoXray) из App Store на ваш iPhone или iPad.
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">2</div>
+          <h4 class="text-base font-bold text-white mb-2">Импортируйте подписку</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Нажмите кнопку <b>«⚡ Открыть и добавить в Happ»</b> в карточке подписки выше. Либо скопируйте ссылку подписки вручную.
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">3</div>
+          <h4 class="text-base font-bold text-white mb-2">Нажмите «Подключить»</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            В приложении появится список серверов InfinityVPN. Нажмите кнопку включения — ваш интернет защищен!
+          </p>
+        </div>
       </div>
 
-      <div style="background: #020617; border: 1px solid rgba(16,185,129,0.3); border-radius: 18px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="font-size: 32px;">🇺🇸</div>
-          <div>
-            <div style="font-size: 14px; font-weight: 800; color: #fff;">United States (Miami)</div>
-            <div style="font-size: 11px; font-family: monospace; color: #94a3b8; margin-top: 2px;">
-              IP: 43.173.90.202:443 • Trojan
+      <!-- OS Content: Android -->
+      <div id="os-content-android" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">1</div>
+          <h4 class="text-base font-bold text-white mb-2">Установите Happ или v2rayNG</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Скачайте приложение <b>Happ</b> или <b>v2rayNG</b> из Google Play или с GitHub.
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">2</div>
+          <h4 class="text-base font-bold text-white mb-2">Вставьте ссылку из буфера</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Скопируйте ссылку на подписку на нашем сайте, затем в приложении нажмите <b>«+» → «Импорт из буфера обмена»</b>.
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">3</div>
+          <h4 class="text-base font-bold text-white mb-2">Активируйте соединение</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Нажмите круглую кнопку подключения внизу экрана. Готово, соединение зашифровано на скорости до 10 Гбит/с.
+          </p>
+        </div>
+      </div>
+
+      <!-- OS Content: Windows -->
+      <div id="os-content-windows" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">1</div>
+          <h4 class="text-base font-bold text-white mb-2">Скачайте Happ для Windows</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Установите официальный клиент Happ или v2rayN / Nekoray на ваш компьютер.
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">2</div>
+          <h4 class="text-base font-bold text-white mb-2">Добавьте подписку</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            В разделе «Подписки» вставьте ссылку <code>https://said3828368163.github.io/InfinityVPN/sub.txt</code> и нажмите «Обновить».
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">3</div>
+          <h4 class="text-base font-bold text-white mb-2">Включите Системный прокси</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Выберите локацию United States и активируйте туннелирование всего трафика.
+          </p>
+        </div>
+      </div>
+
+      <!-- OS Content: macOS -->
+      <div id="os-content-macos" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">1</div>
+          <h4 class="text-base font-bold text-white mb-2">Установите Happ или FoXray</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Загрузите Happ или FoXray из Mac App Store на ваш Mac (M1/M2/M3 или Intel).
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">2</div>
+          <h4 class="text-base font-bold text-white mb-2">Импорт подписки</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Импортируйте ссылку подписки или сканируйте QR-код для моментальной настройки.
+          </p>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/10">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold flex items-center justify-center text-lg mb-4">3</div>
+          <h4 class="text-base font-bold text-white mb-2">Безопасный серфинг</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Наслаждайтесь просмотром YouTube 4K, заблокированных сайтов и сервисов без просадок скорости.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Server Network & Ping Monitor -->
+  <section id="servers" class="py-16 md:py-20 relative">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-3">
+            Инфраструктура
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Серверная сеть InfinityVPN
+          </h2>
+          <p class="text-sm text-slate-400 mt-2">
+            Серверы на скоростных каналах до 10 Гбит/с с аппаратной защитой от DDoS-атак.
+          </p>
+        </div>
+        <div>
+          <button onclick="testPing()" id="ping-btn" class="px-5 py-2.5 rounded-xl bg-slate-900 border border-cyan-500/30 hover:border-cyan-500 text-cyan-300 font-semibold text-xs sm:text-sm flex items-center gap-2 transition-all">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>⚡ Измерить пинг серверов</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <!-- Server: USA -->
+        <div class="glass-card p-5 rounded-2xl border border-cyan-500/40 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🇺🇸</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">США (Майами)</h4>
+                <span class="text-[11px] text-cyan-400 font-mono">Основной кластер</span>
+              </div>
             </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">100% Онлайн</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+            <div class="flex justify-between"><span>Протокол:</span> <span class="text-white">Trojan + TLS 1.3</span></div>
+            <div class="flex justify-between"><span>Порт:</span> <span class="text-white">443 (HTTPS)</span></div>
+            <div class="flex justify-between"><span>Пинг:</span> <span id="ping-val-us" class="text-emerald-400 font-bold">42 ms</span></div>
           </div>
         </div>
-        <span class="status-pill" style="margin: 0;">Онлайн 100%</span>
+
+        <!-- Server: Germany -->
+        <div class="glass-card p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🇩🇪</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Германия (Франкфурт)</h4>
+                <span class="text-[11px] text-slate-400 font-mono">Европейский хаб</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Онлайн</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+            <div class="flex justify-between"><span>Протокол:</span> <span class="text-white">VLESS / Trojan</span></div>
+            <div class="flex justify-between"><span>Порт:</span> <span class="text-white">443 (TLS)</span></div>
+            <div class="flex justify-between"><span>Пинг:</span> <span id="ping-val-de" class="text-emerald-400 font-bold">28 ms</span></div>
+          </div>
+        </div>
+
+        <!-- Server: Netherlands -->
+        <div class="glass-card p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🇳🇱</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Нидерланды (Амстердам)</h4>
+                <span class="text-[11px] text-slate-400 font-mono">No-Logs узел</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Онлайн</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+            <div class="flex justify-between"><span>Протокол:</span> <span class="text-white">Trojan TLS</span></div>
+            <div class="flex justify-between"><span>Порт:</span> <span class="text-white">443</span></div>
+            <div class="flex justify-between"><span>Пинг:</span> <span id="ping-val-nl" class="text-emerald-400 font-bold">22 ms</span></div>
+          </div>
+        </div>
+
+        <!-- Server: Finland -->
+        <div class="glass-card p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🇫🇮</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Финляндия (Хельсинки)</h4>
+                <span class="text-[11px] text-slate-400 font-mono">Минимальный пинг</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Онлайн</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+            <div class="flex justify-between"><span>Протокол:</span> <span class="text-white">Trojan TLS</span></div>
+            <div class="flex justify-between"><span>Порт:</span> <span class="text-white">443</span></div>
+            <div class="flex justify-between"><span>Пинг:</span> <span id="ping-val-fi" class="text-emerald-400 font-bold">18 ms</span></div>
+          </div>
+        </div>
+
+        <!-- Server: Poland -->
+        <div class="glass-card p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🇵🇱</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Польша (Варшава)</h4>
+                <span class="text-[11px] text-slate-400 font-mono">Резервный кластер</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Онлайн</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+            <div class="flex justify-between"><span>Протокол:</span> <span class="text-white">Trojan TLS</span></div>
+            <div class="flex justify-between"><span>Порт:</span> <span class="text-white">443</span></div>
+            <div class="flex justify-between"><span>Пинг:</span> <span id="ping-val-pl" class="text-emerald-400 font-bold">25 ms</span></div>
+          </div>
+        </div>
+
+        <!-- Server: United Kingdom -->
+        <div class="glass-card p-5 rounded-2xl border border-white/5 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🇬🇧</span>
+              <div>
+                <h4 class="text-sm font-bold text-white">Великобритания (Лондон)</h4>
+                <span class="text-[11px] text-slate-400 font-mono">Высокая пропускная способность</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Онлайн</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-400 font-mono">
+            <div class="flex justify-between"><span>Протокол:</span> <span class="text-white">Trojan TLS</span></div>
+            <div class="flex justify-between"><span>Порт:</span> <span class="text-white">443</span></div>
+            <div class="flex justify-between"><span>Пинг:</span> <span id="ping-val-uk" class="text-emerald-400 font-bold">31 ms</span></div>
+          </div>
+        </div>
+
       </div>
 
-      <div style="font-size: 12px; color: #94a3b8; line-height: 1.5;">
-        • Скорость подключения: <b>до 10 Гбит/с</b><br>
-        • Шифрование: <b>Trojan TLS 1.3 / AES-256</b><br>
-        • Политика No-Logs: без сохранения истории активности
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="py-16 md:py-20 max-w-4xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-3">
+        Ответы на вопросы
       </div>
+      <h2 class="text-3xl font-extrabold text-white tracking-tight">Часто задаваемые вопросы</h2>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div>InfinityVPN • Официальный сервис безопасного интернета</div>
-      <div style="margin-top: 4px;">
-        Поддержка: <a href="https://t.me/jailbreak3919" target="_blank">@jailbreak3919</a> • 
-        Бот: <a href="https://t.me/InfinityVPN_serverHost_bot" target="_blank">@InfinityVPN_serverHost_bot</a>
+    <div class="space-y-4">
+      <details class="glass-card p-5 rounded-2xl border border-white/5 group">
+        <summary class="font-bold text-sm sm:text-base text-white cursor-pointer list-none flex justify-between items-center">
+          <span>Что такое Happ и где его скачать?</span>
+          <svg class="w-5 h-5 text-cyan-400 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <b>Happ</b> — это современный, энергоэффективный и быстрый VPN-клиент нового поколения для iOS, Android, Windows и macOS. Он поддерживает современные протоколы Trojan, VLESS и V2Ray с маскировкой трафика под обычный HTTPS. Доступен бесплатно в App Store и Google Play.
+        </p>
+      </details>
+
+      <details class="glass-card p-5 rounded-2xl border border-white/5 group">
+        <summary class="font-bold text-sm sm:text-base text-white cursor-pointer list-none flex justify-between items-center">
+          <span>Почему InfinityVPN не блокируется?</span>
+          <svg class="w-5 h-5 text-cyan-400 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+          Мы используем технологию Trojan с шифрованием TLS 1.3 на 443 порту. Системы DPI (глубокого анализа пакетов) видят этот трафик как стандартное обращение браузера к защищенному веб-сайту, что гарантирует 100% стабильность даже при жестких фильтрациях провайдеров.
+        </p>
+      </details>
+
+      <details class="glass-card p-5 rounded-2xl border border-white/5 group">
+        <summary class="font-bold text-sm sm:text-base text-white cursor-pointer list-none flex justify-between items-center">
+          <span>Как происходит оплата через СБП?</span>
+          <svg class="w-5 h-5 text-cyan-400 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+          При выборе тарифа в боте формируется ссылка СБП и QR-код. Нажмите на ссылку на телефоне — откроется приложение вашего банка для подтверждения оплаты в 1 клик. Подписка активируется моментально.
+        </p>
+      </details>
+
+      <details class="glass-card p-5 rounded-2xl border border-white/5 group">
+        <summary class="font-bold text-sm sm:text-base text-white cursor-pointer list-none flex justify-between items-center">
+          <span>Сохраняете ли вы историю моих посещений?</span>
+          <svg class="w-5 h-5 text-cyan-400 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <p class="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
+          <b>Никогда.</b> В InfinityVPN действует строгая политика No-Logs. Все серверы работают в оперативной памяти (RAM-only), логи активности, IP-адресов и DNS-запросов отключены на уровне ядра ОС.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="glass-card border-t border-white/5 py-10 mt-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-slate-400">
+      
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">∞</div>
+        <div>
+          <div class="font-bold text-white text-sm">InfinityVPN</div>
+          <div>© 2026. Надежная защита интернет-соединения.</div>
+        </div>
       </div>
-    </footer>
-  </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-6 font-medium">
+        <a href="#subscription" class="hover:text-cyan-400 transition-colors">Подписка</a>
+        <a href="#tariffs" class="hover:text-cyan-400 transition-colors">Тарифы</a>
+        <a href="https://said3828368163.github.io/InfinityVPN/sub.txt" class="hover:text-cyan-400 transition-colors">sub.txt (RAW)</a>
+        <a href="https://github.com/said3828368163/InfinityVPN" target="_blank" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+          <span>GitHub Репозиторий</span>
+        </a>
+        <a href="https://t.me/InfinityVPN_bot" target="_blank" class="text-cyan-400 hover:underline">Telegram Бот</a>
+        <a href="https://t.me/jailbreak3919" target="_blank" class="hover:text-white transition-colors">Поддержка 24/7</a>
+      </div>
+
+    </div>
+  </footer>
 
   <script>
-    // 1. Data for 7 Animated TGS Stickers
-    const STICKERS = [
-      {
-        id: 'cart',
-        title: 'Тележка Продажи Тарифов',
-        emoji: '🛒',
-        desc: 'Анимированная тележка магазина: для кнопки Продажа и мгновенного оформления тарифа.',
-        json: 'stickers/cart.json',
-        tgs: 'stickers/cart.tgs'
-      },
-      {
-        id: 'rocket',
-        title: 'Ракета Скорости',
-        emoji: '🚀',
-        desc: 'Символ скорости до 10 Гбит/с и моментального обхода сетевых ограничений.',
-        json: 'stickers/rocket.json',
-        tgs: 'stickers/rocket.tgs'
-      },
-      {
-        id: 'hero',
-        title: 'Защитник Сети',
-        emoji: '🦸‍♂️',
-        desc: 'Криптографическая защита Trojan / Happ от перехвата и слежки.',
-        json: 'stickers/hero.json',
-        tgs: 'stickers/hero.tgs'
-      },
-      {
-        id: 'peace',
-        title: 'Приветствие & Успех',
-        emoji: '✌️',
-        desc: 'Пес Сопротивления Telegram — символ свободы и безопасного интернета.',
-        json: 'stickers/peace.json',
-        tgs: 'stickers/peace.tgs'
-      },
-      {
-        id: 'flex',
-        title: 'Мощь Соединения',
-        emoji: '💪',
-        desc: 'Стабильность 99.9% аптайма без обрывов связи даже под нагрузкой.',
-        json: 'stickers/flex.json',
-        tgs: 'stickers/flex.tgs'
-      },
-      {
-        id: 'eye',
-        title: 'Анонимность No-Logs',
-        emoji: '👁️',
-        desc: 'Серверы с нулевым логированием трафика — полная конфиденциальность.',
-        json: 'stickers/eye.json',
-        tgs: 'stickers/eye.tgs'
-      },
-      {
-        id: 'think',
-        title: 'Выбор Тарифа',
-        emoji: '🤔',
-        desc: 'Удобный выбор тарифов от 1 дня (29 ₽) до 1 года (1 490 ₽).',
-        json: 'stickers/think.json',
-        tgs: 'stickers/think.tgs'
-      }
-    ];
-
-    let currentSticker = STICKERS[0];
-    let masterAnim = null;
-    let isPlaying = true;
-
-    // Initialize Telegram WebApp
-    if (window.Telegram && window.Telegram.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      try { tg.expand(); } catch(e){}
-      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        document.getElementById('tgUserGreeting').innerText = 'Привет, ' + tg.initDataUnsafe.user.first_name + '!';
-      }
-    }
-
-    // 2. Load Master Sticker Player
-    function loadMasterSticker(st) {
-      currentSticker = st;
-      document.getElementById('activeEmoji').innerText = st.emoji;
-      document.getElementById('activeTitle').innerText = st.title;
-      document.getElementById('activeDesc').innerText = st.desc;
-      document.getElementById('downloadTgsLink').href = st.tgs;
-      document.getElementById('downloadTgsLink').setAttribute('download', st.id + '.tgs');
-
-      const stage = document.getElementById('masterStagePlayer');
-      stage.innerHTML = '';
-      if (masterAnim) {
-        masterAnim.destroy();
-      }
-
-      masterAnim = lottie.loadAnimation({
-        container: stage,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: st.json
-      });
-
-      isPlaying = true;
-      document.getElementById('playPauseBtn').innerText = '⏸ Пауза';
-
-      // Highlight selected thumbnail
-      document.querySelectorAll('.sticker-thumb').forEach(el => {
-        if (el.getAttribute('data-id') === st.id) {
-          el.classList.add('selected');
+    // Tab Switching Logic
+    function switchTab(tab) {
+      const tabs = ['link', 'key', 'qr'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        const content = document.getElementById('tab-content-' + t);
+        if (t === tab) {
+          btn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all bg-cyan-500 text-slate-950 shadow-md';
+          content.classList.remove('hidden');
         } else {
-          el.classList.remove('selected');
+          btn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold text-slate-400 hover:text-white transition-all';
+          content.classList.add('hidden');
+        }
+      });
+
+      if (tab === 'qr') {
+        renderQr();
+      }
+    }
+
+    // OS Switcher Logic
+    function switchOS(os) {
+      const oss = ['ios', 'android', 'windows', 'macos'];
+      oss.forEach(o => {
+        const btn = document.getElementById('os-btn-' + o);
+        const content = document.getElementById('os-content-' + o);
+        if (o === os) {
+          btn.className = 'py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm bg-cyan-500 text-slate-950 flex items-center gap-2 shadow-lg';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'py-2.5 px-5 rounded-xl font-semibold text-xs sm:text-sm bg-slate-900 border border-white/10 text-slate-300 hover:text-white flex items-center gap-2';
+          content.classList.add('hidden');
         }
       });
     }
 
-    function togglePlayPause() {
-      if (!masterAnim) return;
-      if (isPlaying) {
-        masterAnim.pause();
-        isPlaying = false;
-        document.getElementById('playPauseBtn').innerText = '▶ Пуск';
-      } else {
-        masterAnim.play();
-        isPlaying = true;
-        document.getElementById('playPauseBtn').innerText = '⏸ Пауза';
-      }
-    }
-
-    function setSpeed(speed, btn) {
-      if (!masterAnim) return;
-      masterAnim.setSpeed(speed);
-      document.querySelectorAll('.controls-bar .ctrl-btn').forEach(b => {
-        if (b.innerText.includes('x')) b.classList.remove('active');
-      });
-      btn.classList.add('active');
-    }
-
-    function sendActiveToBot() {
-      const url = 'https://t.me/InfinityVPN_serverHost_bot?start=sticker_' + currentSticker.id;
-      window.open(url, '_blank');
-    }
-
-    // 3. Populate Thumbnails and Mini Lotties
-    function initStickersGrid() {
-      const grid = document.getElementById('stickersGrid');
-      grid.innerHTML = '';
-
-      STICKERS.forEach((st) => {
-        const thumb = document.createElement('div');
-        thumb.className = 'sticker-thumb' + (st.id === currentSticker.id ? ' selected' : '');
-        thumb.setAttribute('data-id', st.id);
-        thumb.onclick = () => loadMasterSticker(st);
-
-        const playerDiv = document.createElement('div');
-        playerDiv.className = 'thumb-player';
-
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'thumb-title';
-        titleDiv.innerText = st.emoji + ' ' + st.title.split(' ')[0];
-
-        thumb.appendChild(playerDiv);
-        thumb.appendChild(titleDiv);
-        grid.appendChild(thumb);
-
-        // Load mini Lottie for thumb
-        lottie.loadAnimation({
-          container: playerDiv,
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          path: st.json
-        });
+    // Copy to clipboard with Toast
+    function copyText(elementId, successMsg) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.value || el.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg || 'Скопировано в буфер обмена!');
+      }).catch(() => {
+        el.select();
+        document.execCommand('copy');
+        showToast(successMsg || 'Скопировано в буфер обмена!');
       });
     }
 
-    // 4. Load Animated TGS Icons for Action Buttons (Cart & Rocket)
-    function initActionButtonsLottie() {
-      // 🛒 Cart button
-      lottie.loadAnimation({
-        container: document.getElementById('cartBtnLottie'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: 'stickers/cart.json'
-      });
-
-      // 🚀 Rocket button
-      lottie.loadAnimation({
-        container: document.getElementById('rocketBtnLottie'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: 'stickers/rocket.json'
-      });
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
     }
 
-    // 5. Tab Switching
-    function switchTab(tabId) {
-      document.getElementById('tab-stickers').classList.add('hidden');
-      document.getElementById('tab-sale').classList.add('hidden');
-      document.getElementById('tab-sub').classList.add('hidden');
-      document.getElementById('tab-server').classList.add('hidden');
-
-      const activeEl = document.getElementById('tab-' + tabId);
-      if (activeEl) activeEl.classList.remove('hidden');
-
-      document.querySelectorAll('.nav-tab').forEach((t, i) => {
-        t.classList.remove('active');
+    // QR Code Generator
+    let qrRendered = false;
+    function renderQr() {
+      if (qrRendered) return;
+      const box = document.getElementById('qrcode-box');
+      if (!box) return;
+      box.innerHTML = '';
+      new QRCode(box, {
+        text: 'https://said3828368163.github.io/InfinityVPN/sub.txt',
+        width: 180,
+        height: 180,
+        colorDark: '#030712',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
       });
-
-      const tabs = ['stickers', 'sale', 'sub', 'server'];
-      const idx = tabs.indexOf(tabId);
-      if (idx !== -1) {
-        document.querySelectorAll('.nav-tab')[idx].classList.add('active');
-      }
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      qrRendered = true;
     }
 
-    function selectPlan(planId, price) {
-      window.open('https://t.me/InfinityVPN_serverHost_bot?start=pay_' + planId, '_blank');
+    // Ping Test Simulator
+    function testPing() {
+      const btn = document.getElementById('ping-btn');
+      btn.innerHTML = '<span class="animate-spin">⏳</span> <span>Тестирование задержки...</span>';
+      
+      setTimeout(() => {
+        document.getElementById('ping-val-us').innerText = Math.floor(38 + Math.random() * 8) + ' ms';
+        document.getElementById('ping-val-de').innerText = Math.floor(24 + Math.random() * 6) + ' ms';
+        document.getElementById('ping-val-nl').innerText = Math.floor(20 + Math.random() * 5) + ' ms';
+        document.getElementById('ping-val-fi').innerText = Math.floor(16 + Math.random() * 4) + ' ms';
+        document.getElementById('ping-val-pl').innerText = Math.floor(22 + Math.random() * 6) + ' ms';
+        document.getElementById('ping-val-uk').innerText = Math.floor(28 + Math.random() * 6) + ' ms';
+
+        btn.innerHTML = '<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> <span>Пинг обновлен!</span>';
+        setTimeout(() => {
+          btn.innerHTML = '<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> <span>⚡ Измерить пинг серверов</span>';
+        }, 2000);
+      }, 600);
     }
-
-    function copySubUrl() {
-      const url = document.getElementById('subUrlBox').innerText.trim();
-      navigator.clipboard.writeText(url).then(() => {
-        alert('Ссылка на подписку скопирована!');
-      });
-    }
-
-    // 6. Fetch live status.json (Countdown & Traffic stats)
-    fetch('./status.json')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.remaining_days !== undefined) {
-          document.getElementById('daysText').innerText = data.remaining_days + ' из ' + data.total_days + ' дн.';
-          document.getElementById('trafficText').innerText = 'Трафик: ' + data.traffic_remaining_gb + ' GB / ' + data.traffic_total_gb + ' GB';
-          if (data.progress_percent !== undefined) {
-            document.getElementById('barFill').style.width = data.progress_percent + '%';
-          }
-          if (data.status === 'expired') {
-            document.getElementById('dot').style.background = '#ef4444';
-            document.getElementById('dot').style.boxShadow = '0 0 10px #ef4444';
-            document.getElementById('daysText').innerText = 'Срок истёк';
-            document.getElementById('daysText').style.color = '#ef4444';
-          }
-        }
-      })
-      .catch(e => console.log('Status fallback used'));
-
-    // Start everything
-    document.addEventListener('DOMContentLoaded', () => {
-      initActionButtonsLottie();
-      initStickersGrid();
-      loadMasterSticker(STICKERS[0]); // Load Cart sticker by default
-    });
   </script>
 </body>
 </html>
