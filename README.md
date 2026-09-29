@@ -37,4 +37,4 @@
   `https://said3828368163.github.io/InfinityVPN/status.json`
 
 ---
-*Обновлено автоматически: Tue, 29 Sep 2026 09:11:42 GMT*
+*Обновлено автоматически: Tue, 29 Sep 2026 09:20:25 GMT*
