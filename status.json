@@ -1,12 +1,12 @@
 {
   "status": "active",
   "total_days": 30,
-  "remaining_days": 16,
-  "remaining_hours": 372,
+  "remaining_days": 15,
+  "remaining_hours": 348,
   "traffic_total_gb": 100,
-  "traffic_remaining_gb": 53.3,
-  "progress_percent": 53,
+  "traffic_remaining_gb": 50,
+  "progress_percent": 50,
   "start_date": "2026-09-25T16:00:00Z",
   "expiry_date": "2026-10-25T16:00:00.000Z",
-  "last_updated": "2026-10-10T04:21:32.667Z"
+  "last_updated": "2026-10-11T04:02:07.876Z"
 }
