@@ -1,8 +1,8 @@
 # ⚡ InfinityVPN — Официальный репозиторий & Подписка Happ
 
 [![Статус](https://img.shields.io/badge/Статус-%D0%90%D0%BA%D1%82%D0%B8%D0%B2%D0%BD%D0%B0-brightgreen?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
-[![Осталось дней](https://img.shields.io/badge/Осталось_дней-7_из_30-yellow?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
-[![Трафик](https://img.shields.io/badge/Трафик-23.3_из_100_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Осталось дней](https://img.shields.io/badge/Осталось_дней-6_из_30-yellow?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Трафик](https://img.shields.io/badge/Трафик-20.0_из_100_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
 
 👉 **Официальный сайт:** [https://said3828368163.github.io/InfinityVPN/](https://said3828368163.github.io/InfinityVPN/)  
 👉 **Telegram-бот:** [@InfinityVPN_serverHost_bot](https://t.me/InfinityVPN_serverHost_bot)  
@@ -38,12 +38,12 @@
 | Параметр | Значение |
 | :--- | :--- |
 | **Текущий статус** | 🟢 Активна |
-| **Осталось дней** | ⏳ **7 из 30 дней** |
-| **Осталось часов** | ⏱️ **~157 ч.** |
-| **Остаток трафика** | 📶 **23.3 GB / 100 GB** |
-| **Прогресс срока** | `[█████░░░░░░░░░░░░░░░]` **23%** |
+| **Осталось дней** | ⏳ **6 из 30 дней** |
+| **Осталось часов** | ⏱️ **~133 ч.** |
+| **Остаток трафика** | 📶 **20.0 GB / 100 GB** |
+| **Прогресс срока** | `[████░░░░░░░░░░░░░░░░]` **20%** |
 | **Дата активации** | 📅 25.09.2026 |
 | **Дата окончания** | 📅 25.10.2026 |
 
 ---
-*Обновлено автоматически: Mon, 19 Oct 2026 03:17:04 GMT*
+*Обновлено автоматически: Tue, 20 Oct 2026 03:25:43 GMT*
