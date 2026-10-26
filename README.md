@@ -1,8 +1,8 @@
 # ⚡ InfinityVPN — Официальный репозиторий & Подписка Happ
 
-[![Статус](https://img.shields.io/badge/Статус-%D0%90%D0%BA%D1%82%D0%B8%D0%B2%D0%BD%D0%B0-brightgreen?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
-[![Осталось дней](https://img.shields.io/badge/Осталось_дней-1_из_30-red?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
-[![Трафик](https://img.shields.io/badge/Трафик-3.3_из_100_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Статус](https://img.shields.io/badge/Статус-%D0%98%D1%81%D1%82%D0%B5%D0%BA%D0%BB%D0%B0-red?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Осталось дней](https://img.shields.io/badge/Осталось_дней-0_из_30-red?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
+[![Трафик](https://img.shields.io/badge/Трафик-0_из_100_GB-blue?style=for-the-badge)](https://t.me/InfinityVPN_serverHost_bot)
 
 👉 **Официальный сайт:** [https://said3828368163.github.io/InfinityVPN/](https://said3828368163.github.io/InfinityVPN/)  
 👉 **Telegram-бот:** [@InfinityVPN_serverHost_bot](https://t.me/InfinityVPN_serverHost_bot)  
@@ -37,13 +37,13 @@
 
 | Параметр | Значение |
 | :--- | :--- |
-| **Текущий статус** | 🟢 Активна |
-| **Осталось дней** | ⏳ **1 из 30 дней** |
-| **Осталось часов** | ⏱️ **~13 ч.** |
-| **Остаток трафика** | 📶 **3.3 GB / 100 GB** |
-| **Прогресс срока** | `[█░░░░░░░░░░░░░░░░░░░]` **3%** |
+| **Текущий статус** | 🔴 Истекла |
+| **Осталось дней** | ⏳ **0 из 30 дней** |
+| **Осталось часов** | ⏱️ **~0 ч.** |
+| **Остаток трафика** | 📶 **0 GB / 100 GB** |
+| **Прогресс срока** | `[░░░░░░░░░░░░░░░░░░░░]` **0%** |
 | **Дата активации** | 📅 25.09.2026 |
 | **Дата окончания** | 📅 25.10.2026 |
 
 ---
-*Обновлено автоматически: Sun, 25 Oct 2026 03:13:56 GMT*
+*Обновлено автоматически: Mon, 26 Oct 2026 03:14:39 GMT*
